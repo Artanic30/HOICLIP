@@ -7,7 +7,7 @@ from util.misc import (NestedTensor, nested_tensor_from_tensor_list,
                        accuracy, get_world_size,
                        is_dist_avail_and_initialized)
 import numpy as np
-import clip
+from ModifiedCLIP import clip
 from datasets.hico_text_label import hico_text_label, hico_obj_text_label, hico_unseen_index
 from datasets.vcoco_text_label import vcoco_hoi_text_label, vcoco_obj_text_label
 
