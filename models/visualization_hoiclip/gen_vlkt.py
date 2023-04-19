@@ -271,9 +271,11 @@ class GEN_VLKT(nn.Module):
                     assert gt_hoi == -1
                     gt_hoi = i
 
+            # only visualize unseen classes
             if gt_hoi not in self.unseen_index_list:
                 continue
 
+            # visualize fail cases
             select_idx = (label != gt_hoi).nonzero(as_tuple=False).squeeze(1)
             if len(select_idx) == 0:
                 continue
@@ -286,6 +288,7 @@ class GEN_VLKT(nn.Module):
 
             score_hoi = hoi[select_query].max()
 
+            # remove low confidence cases
             if score_hoi < 0.5:
                 continue
             h_b = boxes_h[select_query].cpu()
@@ -306,6 +309,8 @@ class GEN_VLKT(nn.Module):
 
             image_ = Image.open(path_to_datasets.format(tgt["filename"])).convert('RGB')
             canvas = ImageDraw.Draw(image_)
+
+            # store visualized file path
             self.fail_list.append(tgt["filename"])
             b1 = np.asarray(h_b)
             b2 = np.asarray(h_o)
