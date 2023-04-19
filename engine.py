@@ -18,6 +18,7 @@ from tqdm import tqdm
 import datetime
 import time
 
+
 def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
                     data_loader: Iterable, optimizer: torch.optim.Optimizer,
                     device: torch.device, epoch: int, max_norm: float = 0, lr_scheduler=None,
@@ -177,13 +178,96 @@ def evaluate_hoi(dataset_file, model, postprocessors, data_loader,
     preds = [img_preds for i, img_preds in enumerate(preds) if i in indices]
     gts = [img_gts for i, img_gts in enumerate(gts) if i in indices]
 
+    """
+    For zero-shot enhancement
+    args.calip_path is the path to store performance for different hyper-parameter
+    """
+    root = os.path.join(args.output_dir, args.calip_path)
+    if args.calip_path:
+
+        with open(os.path.join(root, 'log.txt'), 'a') as f:
+            log = f'\n=========The great hyperparameter tuning begins============\n'
+            print(log)
+            f.write(log)
+
+        test_pred = copy.deepcopy(preds)
+
+        # testing
+        if dataset_file == 'hico':
+            evaluator = HICOEvaluator_gen(test_pred, gts, data_loader.dataset.rare_triplets,
+                                          data_loader.dataset.non_rare_triplets,
+                                          data_loader.dataset.correct_mat, args=args)
+        else:
+            evaluator = VCOCOEvaluator_gen(preds, gts, data_loader.dataset.correct_mat,
+                                           use_nms_filter=args.use_nms_filter)
+        stats = evaluator.evaluate()
+
+        text_hoi_feature = model.transformer.hoi_cls
+        spatial_feature = torch.cat([i['clip_visual'].unsqueeze(0) for i in preds])
+        spatial_feature /= spatial_feature.norm(dim=-1, keepdim=True)
+        spatial_cls = spatial_feature[:, 0, :]  # M, c
+
+        cls_scores = spatial_cls @ text_hoi_feature
+        with open(os.path.join(root, 'log.txt'), 'a') as f:
+            log = f'\n=========Baseline Performance============\n{stats}\n============================\n'
+            print(log)
+            f.write(log)
+
+        best_performance_1 = 0
+        for a in [1]:
+            for co in [1.0]:
+                for topk in [10, 20, 30, 40, 50]:
+                    print(f'current at topk: {topk} as: {a}')
+                    test_pred = copy.deepcopy(preds)
+                    clip_hoi_score = cls_scores
+                    # clip_hoi_score /= (1 + alpha + beta)
+                    clip_hoi_score_ori = clip_hoi_score.clone()
+
+                    ignore_idx = clip_hoi_score.sort(descending=True).indices[:, topk:]
+                    for idx, igx in enumerate(ignore_idx):
+                        clip_hoi_score[idx][igx] *= 0
+                    clip_hoi_score = clip_hoi_score.unsqueeze(1)
+
+                    # update logits
+                    for i in range(len(test_pred)):
+                        test_pred[i]['hoi_scores'] += clip_hoi_score[i].sigmoid() * co
+                    # testing
+                    if dataset_file == 'hico':
+                        evaluator = HICOEvaluator_gen(test_pred, gts, data_loader.dataset.rare_triplets,
+                                                      data_loader.dataset.non_rare_triplets,
+                                                      data_loader.dataset.correct_mat, args=args)
+
+                    else:
+                        evaluator = VCOCOEvaluator_gen(test_pred, gts, data_loader.dataset.correct_mat,
+                                                       use_nms_filter=args.use_nms_filter)
+                    stats = evaluator.evaluate()
+                    if dataset_file == 'hico':
+                        re_map = stats['mAP']
+                    elif dataset_file == 'vcoco':
+                        re_map = stats['mAP_all']
+                    elif dataset_file == 'hoia':
+                        re_map = stats['mAP']
+                    else:
+                        raise NotImplementedError
+
+                    if best_performance_1 < re_map:
+                        best_performance_1 = re_map
+
+                        with open(os.path.join(root, 'log.txt'), 'a') as f:
+                            log = f'sigmoid after topk: {topk} as: {a} co: {co}' \
+                                  f'\n performance: {stats}\n'
+                            print(log)
+                            f.write(log)
+
     if dataset_file == 'hico':
         if args.dataset_root == 'GEN':
             evaluator = HICOEvaluator_gen(preds, gts, data_loader.dataset.rare_triplets,
-                                      data_loader.dataset.non_rare_triplets, data_loader.dataset.correct_mat, args=args)
+                                          data_loader.dataset.non_rare_triplets, data_loader.dataset.correct_mat,
+                                          args=args)
     elif dataset_file == 'vcoco':
         if args.dataset_root == 'GEN':
-            evaluator = VCOCOEvaluator_gen(preds, gts, data_loader.dataset.correct_mat, use_nms_filter=args.use_nms_filter)
+            evaluator = VCOCOEvaluator_gen(preds, gts, data_loader.dataset.correct_mat,
+                                           use_nms_filter=args.use_nms_filter)
     else:
         raise NotImplementedError
     start_time = time.time()

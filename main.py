@@ -212,7 +212,7 @@ def get_args_parser():
     parser.add_argument('--eval_each_ap', action='store_true')
     parser.add_argument('--topk_hoi', default=10, type=int)
     parser.add_argument('--inter_dec_layers', default=3, type=int)
-    # DN training
+
     # verb setting
     parser.add_argument('--verb_pth', default='', help='location for predefined verb feature', type=str)
     parser.add_argument('--verb_weight', default=0.5, type=float)
@@ -222,6 +222,9 @@ def get_args_parser():
     # validation split
     parser.add_argument('--validation_split', default=-1., type=int)
     parser.add_argument('--lr_drop_gamma', default=0.1, type=float)
+
+    # zero shot enhancement
+    parser.add_argument('--calip_path', default='', type=str)
 
 
     return parser
