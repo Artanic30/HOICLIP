@@ -49,7 +49,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
             targets = [{k: v.to(device) for k, v in t.items() if k != 'filename' and k != 'raw_img'} for t in targets]
             clip_img = torch.stack([v['clip_inputs'] for v in targets])
             # with autocast():
-            # obj_feature, hoi_feature, verb_feature = model(samples, clip_input=clip_img, targets=targets)
+            obj_feature, hoi_feature, verb_feature = model(samples, clip_input=clip_img, targets=targets)
 
             metric_logger.update(loss=0)
             if hasattr(criterion, 'loss_labels'):
@@ -60,8 +60,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
                 metric_logger.update(obj_class_error=0)
             metric_logger.update(lr=0)
             continue
-        # if samples.tensors.shape[0] < 2:
-        #     break
+
         samples = samples.to(device)
         file_names = [{'filename': i['filename']} for i in targets]
         targets = [{k: v.to(device) for k, v in t.items() if k != 'filename' and k != 'raw_img'} for t in targets]
@@ -116,15 +115,6 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
         step += 1
 
-        # optimizer.zero_grad()
-        #
-        # with amp.scale_loss(losses, optimizer, delay_unscale=False) as scaled_loss:
-        #     scaled_loss.backward()
-        # # losses.backward()
-        # if max_norm > 0:
-        #     torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm)
-        # optimizer.step()
-
         metric_logger.update(loss=loss_value, **loss_dict_reduced_scaled, **loss_dict_reduced_unscaled)
         if hasattr(criterion, 'loss_labels') and False:
             metric_logger.update(class_error=loss_dict_reduced['class_error'])
@@ -136,6 +126,33 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         else:
             metric_logger.update(obj_class_error=loss_dict_reduced['obj_class_error'])
         metric_logger.update(lr=optimizer.param_groups[0]["lr"])
+
+    # trick for generate verb
+    if no_training:
+        from datasets.static_hico import HOI_IDX_TO_ACT_IDX, HOI_IDX_TO_OBJ_IDX
+        hoi_feature = hoi_feature / hoi_feature.norm(dim=1, keepdim=True)
+        obj_feature = obj_feature / obj_feature.norm(dim=1, keepdim=True)
+
+        y_verb = [HOI_IDX_TO_ACT_IDX[i] for i in range(600)]
+        y_obj = [HOI_IDX_TO_OBJ_IDX[i] for i in range(600)]
+
+        # composite image feature verb + text feature object
+        obj_human = []
+        for i in range(600):
+            obj_human.append(obj_feature[y_obj[i]])
+        obj_human = torch.stack(obj_human)
+        verb_human = hoi_feature - obj_human
+
+        verb_feature = torch.zeros(117, 512)
+        for idx, v in zip(y_verb, verb_human):
+            verb_feature[idx] += v
+
+        for i in range(117):
+            verb_feature[i] /= y_verb.count(i)
+
+        v_feature = verb_feature / verb_feature.norm(dim=-1, keepdim=True)
+        torch.save(v_feature, f'./verb_{args.dataset_file}.pth')
+        exit()
 
     # gather the stats from all processes
     metric_logger.synchronize_between_processes()
@@ -180,10 +197,10 @@ def evaluate_hoi(dataset_file, model, postprocessors, data_loader,
 
     """
     For zero-shot enhancement
-    args.calip_path is the path to store performance for different hyper-parameter
+    args.training_free_enhancement_path is the path to store performance for different hyper-parameter
     """
-    root = os.path.join(args.output_dir, args.calip_path)
-    if args.calip_path:
+    root = os.path.join(args.output_dir, args.training_free_enhancement_path)
+    if args.training_free_enhancement_path:
 
         with open(os.path.join(root, 'log.txt'), 'a') as f:
             log = f'\n=========The great hyperparameter tuning begins============\n'

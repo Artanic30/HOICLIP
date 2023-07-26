@@ -9,7 +9,7 @@ do
     export NCCL_P2P_LEVEL=NVL
     export OMP_NUM_THREADS=8
     python -m torch.distributed.launch \
-            --nproc_per_node=2 \
+            --nproc_per_node=1 \
             --master_port $[29403 + i] \
             --use_env \
             main.py \
@@ -21,23 +21,18 @@ do
             --backbone resnet50 \
             --num_queries 64 \
             --dec_layers 3 \
-            --epochs 90 \
-            --lr_drop 60 \
+            --epochs 1 \
             --use_nms_filter \
             --fix_clip \
-            --batch_size 8 \
+            --batch_size 16 \
             --pretrained params/detr-r50-pre-2branch-hico.pth \
             --with_clip_label \
             --with_obj_clip_label \
             --gradient_accumulation_steps 1 \
             --num_workers 8 \
             --opt_sched "multiStep" \
-            --dataset_root GEN \
-            --model_name HOICLIP \
-            --zero_shot_type default \
-            --resume ${EXP_DIR}/checkpoint_last.pth \
-            --verb_pth ./tmp/verb.pth \
-            --training_free_enhancement_path \
-            ./training_free_ehnahcement/
+            --dataset_root GENERATE_VERB \
+            --model_name GENERATE_VERB \
+            --no_training
     sleep 120
 done

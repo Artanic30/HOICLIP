@@ -14,10 +14,10 @@ do
             --use_env \
             main.py \
             --output_dir ${EXP_DIR} \
-            --dataset_file hico \
-            --hoi_path data/hico_20160224_det \
-            --num_obj_classes 80 \
-            --num_verb_classes 117 \
+            --dataset_file vcoco \
+            --hoi_path data/v-coco \
+            --num_obj_classes 81 \
+            --num_verb_classes 29 \
             --backbone resnet50 \
             --num_queries 64 \
             --dec_layers 3 \
@@ -37,6 +37,7 @@ do
             --zero_shot_type default \
             --resume ${EXP_DIR}/checkpoint_last.pth \
             --verb_pth ./tmp/verb.pth \
+            --verb_weight 0.1 \
             --training_free_enhancement_path \
             ./training_free_ehnahcement/
     sleep 120

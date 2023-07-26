@@ -1,6 +1,7 @@
 from .models_gen.gen_vlkt import build as build_gen
 from .models_hoiclip.gen_vlkt import build as build_models_hoiclip
 from .visualization_hoiclip.gen_vlkt import build as visualization
+from .generate_image_feature.gen_vlkt import build as generate_verb
 
 
 def build_model(args):
@@ -10,5 +11,7 @@ def build_model(args):
         return build_gen(args)
     elif args.model_name == "VISUALIZATION":
         return visualization(args)
+    elif args.model_name == "GENERATE_VERB":
+        return generate_verb(args)
 
     raise ValueError(f'Model {args.model_name} not supported')

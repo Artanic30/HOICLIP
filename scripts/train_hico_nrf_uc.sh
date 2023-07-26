@@ -34,7 +34,8 @@ do
             --opt_sched "multiStep" \
             --dataset_root GEN \
             --model_name HOICLIP \
-            --zero_shot_type default \
+            --del_unseen \
+            --zero_shot_type non_rare_first \
             --resume ${EXP_DIR}/checkpoint_last.pth \
             --verb_pth ./tmp/verb.pth \
             --training_free_enhancement_path \

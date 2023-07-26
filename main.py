@@ -153,7 +153,6 @@ def get_args_parser():
     parser.add_argument('--ft_clip_with_small_lr', action='store_true',
                         help='Use smaller learning rate to finetune clip weights')
     parser.add_argument('--with_clip_label', action='store_true', help='Use clip to classify HOI')
-    parser.add_argument('--early_stop_mimic', action='store_true', help='stop mimic after step')
     parser.add_argument('--with_obj_clip_label', action='store_true', help='Use clip to classify object')
     parser.add_argument('--clip_model', default='ViT-B/32',
                         help='clip pretrained model path')
@@ -164,11 +163,7 @@ def get_args_parser():
     parser.add_argument('--zero_shot_type', default='default',
                         help='default, rare_first, non_rare_first, unseen_object, unseen_verb')
     parser.add_argument('--del_unseen', action='store_true', help='')
-    parser.add_argument('--fs_num', default=-1, type=int)
-    parser.add_argument('--fs_strategy', default=2, type=int)
-    parser.add_argument('--fs_pipeline', default='mix', type=str)
     # old parameter
-    # parser.add_argument('--fix_backbone', action='store_true', help='fix clip encoder and cnn backbone')
     parser.add_argument('--fix_backbone_mode', nargs='+', default=[], help='fix (part of) backbone')
 
     # others
@@ -183,24 +178,11 @@ def get_args_parser():
     parser.add_argument('--fix_clip_label', action='store_true', help='')
     parser.add_argument('--with_rec_loss', action='store_true', help='')
     parser.add_argument('--rec_loss_coef', default=2, type=float)
-    parser.add_argument('--cache_img', action='store_true', help='')
     parser.add_argument('--no_training', action='store_true', help='')
     parser.add_argument('--dataset_root', default='GEN', help='')
     parser.add_argument('--model_name', default='GEN', help='')
     parser.add_argument('--eval_location', action='store_true', help='')
-    parser.add_argument('--dino_config', default='', help='')
     # DAB
-    parser.add_argument('--pe_temperatureH', default=20, type=int,
-                        help="Temperature for height positional encoding.")
-    parser.add_argument('--pe_temperatureW', default=20, type=int,
-                        help="Temperature for width positional encoding.")
-    parser.add_argument('--two_stage', default=False, action='store_true',
-                        help="Using two stage variant for DAB-Deofrmable-DETR")
-    parser.add_argument('--transformer_activation', default='prelu', type=str)
-    parser.add_argument('--num_patterns', default=0, type=int,
-                        help='number of pattern embeddings. See Anchor DETR for more details.')
-    parser.add_argument('--random_refpoints_xy', action='store_true',
-                        help="Random init the x,y of anchor boxes and freeze them.")
     parser.add_argument('--enable_cp', action='store_true',
                         help="use checkpoint to save memory")
     parser.add_argument('--no_fix_clip_linear', action='store_true',
@@ -224,8 +206,7 @@ def get_args_parser():
     parser.add_argument('--lr_drop_gamma', default=0.1, type=float)
 
     # zero shot enhancement
-    parser.add_argument('--calip_path', default='', type=str)
-
+    parser.add_argument('--training_free_enhancement_path', default='', type=str)
 
     return parser
 
@@ -389,10 +370,8 @@ def main(args):
                                    collate_fn=utils.collate_fn, num_workers=args.num_workers)
 
     # test and val dataloader initialization
-    if args.fs_num != -1:
-        test_split = 'test'
-    else:
-        test_split = 'val'
+
+    test_split = 'val'
     dataset_val = build_dataset(image_set='val', args=args)
     dataset_test = build_dataset(image_set=test_split, args=args)
     if args.distributed:

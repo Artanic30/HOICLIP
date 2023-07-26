@@ -35,6 +35,7 @@ do
             --dataset_root GEN \
             --model_name HOICLIP \
             --zero_shot_type default \
+            --frac 50% \
             --resume ${EXP_DIR}/checkpoint_last.pth \
             --verb_pth ./tmp/verb.pth \
             --training_free_enhancement_path \
