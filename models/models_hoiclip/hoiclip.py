@@ -22,7 +22,7 @@ def _sigmoid(x):
     return y
 
 
-class GEN_VLKT(nn.Module):
+class HOICLIP(nn.Module):
     def __init__(self, backbone, transformer, num_queries, aux_loss=False, args=None):
         super().__init__()
 
@@ -542,7 +542,7 @@ def build(args):
 
     gen = build_gen(args)
 
-    model = GEN_VLKT(
+    model = HOICLIP(
         backbone,
         gen,
         num_queries=args.num_queries,
