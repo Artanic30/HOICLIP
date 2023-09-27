@@ -176,46 +176,72 @@ python -m torch.distributed.launch \
         --use_nms_filter
 ```
 
-For the official evaluation (reported in paper), you need to covert the prediction file to a official prediction format
+For the official evaluation (reported in paper), you need to covert the prediction file to an official prediction format
 following [this file](./tools/covert_annot_for_official_eval.py), and then
 follow [PPDM](https://github.com/YueLiao/PPDM) evaluation steps.
 
-### V-COCO
+[//]: # (### V-COCO)
 
-Firstly, you need the add the following main function to the vsrl_eval.py in data/v-coco.
+[//]: # ()
+[//]: # (Firstly, you need the add the following main function to the vsrl_eval.py in data/v-coco.)
 
-```
-if __name__ == '__main__':
-  import sys
+[//]: # ()
+[//]: # (```)
 
-  vsrl_annot_file = 'data/vcoco/vcoco_test.json'
-  coco_file = 'data/instances_vcoco_all_2014.json'
-  split_file = 'data/splits/vcoco_test.ids'
+[//]: # (if __name__ == '__main__':)
 
-  vcocoeval = VCOCOeval(vsrl_annot_file, coco_file, split_file)
+[//]: # (  import sys)
 
-  det_file = sys.argv[1]
-  vcocoeval._do_eval(det_file, ovr_thresh=0.5)
-```
+[//]: # ()
+[//]: # (  vsrl_annot_file = 'data/vcoco/vcoco_test.json')
 
-Next, for the official evaluation of V-COCO, a pickle file of detection results have to be generated. You can generate
-the file with the following command. and then evaluate it as follows.
+[//]: # (  coco_file = 'data/instances_vcoco_all_2014.json')
 
-```
-python generate_vcoco_official.py \
-        --param_path pretrained/VCOCO_GEN_VLKT_S.pth \
-        --save_path vcoco.pickle \
-        --hoi_path data/v-coco \
-        --num_queries 64 \
-        --dec_layers 3 \
-        --use_nms_filter \
-        --with_clip_label \
-        --with_obj_clip_label
+[//]: # (  split_file = 'data/splits/vcoco_test.ids')
 
-cd data/v-coco
-python vsrl_eval.py vcoco.pickle
+[//]: # ()
+[//]: # (  vcocoeval = VCOCOeval&#40;vsrl_annot_file, coco_file, split_file&#41;)
 
-```
+[//]: # ()
+[//]: # (  det_file = sys.argv[1])
+
+[//]: # (  vcocoeval._do_eval&#40;det_file, ovr_thresh=0.5&#41;)
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (Next, for the official evaluation of V-COCO, a pickle file of detection results have to be generated. You can generate)
+
+[//]: # (the file with the following command. and then evaluate it as follows.)
+
+[//]: # ()
+[//]: # (```)
+
+[//]: # (python generate_vcoco_official.py \)
+
+[//]: # (        --param_path pretrained/VCOCO_GEN_VLKT_S.pth \)
+
+[//]: # (        --save_path vcoco.pickle \)
+
+[//]: # (        --hoi_path data/v-coco \)
+
+[//]: # (        --num_queries 64 \)
+
+[//]: # (        --dec_layers 3 \)
+
+[//]: # (        --use_nms_filter \)
+
+[//]: # (        --with_clip_label \)
+
+[//]: # (        --with_obj_clip_label)
+
+[//]: # ()
+[//]: # (cd data/v-coco)
+
+[//]: # (python vsrl_eval.py vcoco.pickle)
+
+[//]: # ()
+[//]: # (```)
 
 ### Zero-shot
 
