@@ -14,7 +14,7 @@ from datasets.static_hico import HOI_IDX_TO_ACT_IDX
 
 from ..backbone import build_backbone
 from ..matcher import build_matcher
-from .gen import build_gen
+from .et_gen import build_gen
 from PIL import Image, ImageDraw
 import os
 from util.box_ops import box_cxcywh_to_xyxy
