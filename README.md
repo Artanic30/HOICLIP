@@ -314,6 +314,7 @@ You may need to change the `--frac [portion]%` in the scripts.
 | HOICLIP|UO |16.20| 30.99| 28.53| [model](https://drive.google.com/file/d/1oOe8rOwGDugIhd5N3-dlwyf5SpxYFkHE/view?usp=drive_link)|    [config](./scripts/train_hico_uo.sh)    |
 | HOICLIP|UV|24.30| 32.19| 31.09| [model](https://drive.google.com/file/d/174J4x0LovEZBnZ_0yAObMsdl5sW9SZ84/view?usp=drive_link)|    [config](./scripts/train_hico_uv.sh)    |
 
+We also provide the checkpoints for uc0, uc1, uc2, uc3 settings in [Google Drive](https://drive.google.com/drive/folders/1NddLSPHbNZXlxmIQbcobh2O5KKWAITRo?usp=drive_link)
 ## Citation
 
 Please consider citing our paper if it helps your research.
