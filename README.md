@@ -24,7 +24,7 @@ HICO-DET dataset can be downloaded [here](https://drive.google.com/open?id=1QZcJ
 finishing downloading, unpack the tarball (`hico_20160224_det.tar.gz`) to the `data` directory.
 
 Instead of using the original annotations files, we use the annotation files provided by the PPDM authors. The
-annotation files can be downloaded from [here](https://drive.google.com/open?id=1WI-gsNLS-t0Kh8TVki1wXqc3y2Ow1f2R). The
+annotation files can be downloaded from [here](https://drive.google.com/open?id=1dUByzVzM6z1Oq4gENa1-t0FLhr0UtDaS). The
 downloaded annotation files have to be placed as follows.
 For fractional data setting, we provide the
 annotations [here](https://drive.google.com/file/d/13O_uUv_17-Db9ghDqo4z2s3MZlfZJtgi/view?usp=sharing). After
